@@ -1,82 +1,57 @@
 import { parse } from 'query-string'
-import React, { Component } from 'react'
-import { Route, Link } from 'react-router-dom'
-import slug from 'slug'
-import { getPlayers } from '../api'
-import Loading from './Loading'
+import React, { useEffect, useReducer } from 'react'
+import { Route, Switch} from 'react-router-dom'
 import Sidebar from './Sidebar'
-import { TransitionGroup, CSSTransition } from 'react-transition-group'
+import { getPlayers } from '../api'
+import Player from './Player'
+import Loading from './Loading'
+import { useLocation, useRouteMatch } from 'react-router-dom'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
 
-export default class Players extends Component {
-    state = {
-        players: [],
-        loading: true
+const playersReducer = (state, action) => {
+    switch(action.type) {
+        case 'fetch': {
+            return {
+                loading: false,
+                players: action.players
+            }
+        } default: throw new Error("This action is not allowed")
     }
-    fetchPlayers = (teamId) => {
+}
+
+export default function Players() {
+    const [state, dispatch] = useReducer(playersReducer, {
+        loading: true,
+        players: []
+    })
+
+    const location = useLocation()
+    const { teamId } = parse(location.search)
+    const { url } = useRouteMatch()
+
+    useEffect(() => {
         getPlayers(teamId)
-            .then((players) => this.setState(() => ({players, loading: false})))
-    }
+            .then((players) => dispatch({type: 'fetch', players}))
+    }, [teamId])
 
-    componentDidMount() {
-        const { location } = this.props
-        if (location.search) {
-            this.fetchPlayers(parse (location.search).teamId)
-        } else 
-            this.fetchPlayers()
+    const { players, loading } = state;
+    if (loading) return <Loading/>
+    return (
+        <div className='container two-column'>
+            <Sidebar title="Players" list={players.map(p => p.name)} loading={loading} />
         
-    }
-    render() {
-        const {players, loading} = this.state;
-        const {location, match} = this.props;
-        return (
-            <div className='container two-column'>
-                <Sidebar title="Players" list={players.map(p => p.name)} loading={loading} {...this.props} />
-                {!loading && location.pathname === '/players' && <div className='sidebar-instruction'>Please select a player</div> }
-                <Route path={`${match.url}/:playerId`} render={({match}) => {
-                    if (loading) return <Loading/>
-
-                    const {name, position, teamId, number, avatar, apg, ppg, rpg, spg} = players.find((p) => slug(p.name) === match.params.playerId)
-
-                    return (
-                        <TransitionGroup className='panel' >
-                            <CSSTransition key={location.key} classNames='fade' timeout={250}>
-                                <div className='panel'>
-                                    <img className='avatar' src={`${avatar}`} alt={`${name}'s avatar`}/>
-                                    <h1 className='medium-header'>{name}</h1>
-                                    <h3 className='header'>#{number}</h3>
-                                    <div className='row'>
-                                        <ul className='info-list' style={{marginRight: 80}}>
-                                            <li>
-                                                Team <div>
-                                                    <Link to={`/${teamId}`} style={{color: '#68809a'}}>{teamId[0].toUpperCase() + teamId.slice(1)}</Link>
-                                                </div>
-                                            </li>
-                                            <li>Position
-                                                <div>{position}</div>
-                                            </li>
-                                            <li>PPG
-                                                <div>{ppg}</div>
-                                            </li>
-                                        </ul>
-                                        <ul className='info-list'>
-                                            <li>APG
-                                                <div>{apg}</div>
-                                            </li>
-                                            <li>SPG
-                                                <div>{spg}</div>
-                                            </li>
-                                            <li>RPG
-                                                <div>{rpg}</div>
-                                            </li>
-                                            </ul>
-                                    </div> 
-                                </div>
-                            </CSSTransition>
-                        </TransitionGroup>
-                    )
-                }}/>
-            </div> 
-            
-        )
-        }
+            <TransitionGroup component={null} >
+                <CSSTransition key={location.key} classNames='fade' timeout={500}>
+                    <Switch location={location}>
+                        <Route path={`${url}/:playerId`}>
+                            <Player players={players} />
+                        </Route>  
+                        <Route path="*">
+                            <div className='sidebar-instruction'>Please select a player</div>
+                        </Route> 
+                    </Switch>
+                </CSSTransition>
+            </TransitionGroup> 
+        </div> 
+    )
 }

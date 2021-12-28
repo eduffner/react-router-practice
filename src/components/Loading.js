@@ -1,34 +1,30 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
-export default class Loading extends Component {
-    static propTypes = {
-        text: PropTypes.string.isRequired,
-    }
-    static defaultProps = {
-        text: 'Loading',
-    }
-    state = {
-        text: this.props.text
-    }
-    componentDidMount () {
-        const stopper = this.props.text + '...'
-        this.interval = setInterval(() => {
-        this.state.text === stopper
-            ? this.setState(() => ({ text: this.props.text }))
-            : this.setState(({ text }) => ({ text: text + '.' }))
+export default function Loading({ text = 'Loading' }) {
+    const [ content, setContent ] = useState(text)
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setContent((content) => {
+                return content === `${text}...`
+                    ? (text)
+                    : `${content}.`
+            })
         }, 300)
-    }
-    componentWillUnmount () {
-        window.clearInterval(this.interval)
-    }
-    render () {
-        return (
+
+        return  () => clearInterval(interval)
+    }, [text])
+    
+    return (
         <div className='container'>
             <p className='text-center'>
-            {this.state.text}
+                {content}
             </p>
         </div>
-        )
-    }
+    )
+}
+
+Loading.propTypes = {
+    text: PropTypes.string,
 }

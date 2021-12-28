@@ -16,14 +16,26 @@ export default function App() {
       <div>
         <NavBar/>
         <React.Suspense fallback={<Loading />}>
-        <Switch>
-            <Route  path="/" exact component={Home}/>
-            <Route path="/players" component={Players}/>
-            <Route path="/teams" component={Teams}/>
-            <Route path="/:teamId" exact component={TeamPage} />
-            <Route path="/:teamId/:articleId" component={Articles} />
-          <Route render={() => <h1 className="text-center">404</h1>} />
-        </Switch>
+          <Switch>
+              <Route  path="/" exact >
+                <Home />
+              </Route>
+              <Route path="/players">
+                <Players />
+              </Route> 
+              <Route path="/teams">
+                <Teams />
+              </Route>
+              <Route path="/:teamId" exact>
+                <TeamPage />
+              </Route>
+              <Route path="/:teamId/articles">
+                <Articles />
+              </Route>
+              <Route path="*">
+                <h1 className="text-center">404</h1>
+              </Route>
+          </Switch>
         </React.Suspense>
       </div>
     </Router>

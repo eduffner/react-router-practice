@@ -1,56 +1,60 @@
-import React, { Component } from 'react'
-import { Route } from 'react-router-dom'
+import React, { useEffect, useReducer } from 'react'
+import { Route, Switch } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { getTeamsArticles } from '../api'
 import Article from './Article'
 import Loading from './Loading'
+import { useParams } from 'react-router-dom'
+import { useRouteMatch } from 'react-router-dom/cjs/react-router-dom.min'
 
-export default class Articles extends Component {
-    state = {
-        teamsArticles: [],
-        loading: true
+const articlesReducer = (state, action) => {
+    switch(action.type) {
+        case 'fetch': {
+            return {
+                loading: false,
+                teamsArticles: action.articles
+            }
+        } default: throw new Error("This action is not allowed")
     }
-    componentDidMount() {
-        getTeamsArticles(this.props.match.params.teamId) 
+}
+
+export default function Articles() {
+    const [state, dispatch] = useReducer(articlesReducer, {
+        loading: true,
+        teamsArticles: []
+    })
+    const { teamId } = useParams()
+    const { path } = useRouteMatch()
+
+    useEffect(() => {
+        getTeamsArticles(teamId) 
         .then((teamsArticles) => {
-            this.setState(() => ({
-            loading: false,
-            teamsArticles: teamsArticles.map((article) => article.title)
-            }))
+            dispatch({
+                type: 'fetch',
+                articles: teamsArticles
+            })
         })
-    }
-    render() {
-        const { loading, teamsArticles } = this.state
-        const { location } = this.props
-        const { params, url } = this.props.match
-        const  { teamId } = params
+    }, [teamId])
 
-        console.log(location.pathname)
-        console.log(`${teamId}/articles`)
+    const { loading, teamsArticles } = state 
 
-        return loading === true
-        ? <Loading/>
-        : <div className='container two-column'>
+    if (loading) return <Loading />
+    return (
+        <div className='container two-column'>
             <Sidebar
                 loading={loading}
                 title='Articles'
-                list={teamsArticles}
-                {...this.props}
+                list={teamsArticles.map((article) => article.title)}
             />
-            {!loading && location.pathname === `/${teamId}/articles` && <div className='sidebar-instruction'>Please select an article</div>}
+            <Switch>
+                <Route path={`${path}/:articleId`} >
+                    <Article />
+                </Route>
+                <Route path="*">
+                    <div className='sidebar-instruction'>Please select an article</div>
+                </Route> 
+            </Switch>
+        </div>
+    )
 
-            <Route path={`${url}/:articleId`} render={({ match }) => (
-                <Article articleId={match.params.articleId} teamId={teamId}>
-                    {(article) => !article ? <Loading/> : (
-                        <div className='panel'>
-                        <article className='article' key={article.id}>
-                            <h1 className='header'>{article.title}</h1>
-                            <p>{article.body}</p>
-                        </article>
-                        </div>
-                    )}
-                </Article>
-            )} />
-            </div>
-    }
 }

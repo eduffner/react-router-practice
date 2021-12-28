@@ -1,34 +1,29 @@
-import { Component } from 'react'
-import PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
 import { getArticle } from '../api'
+import Loading from './Loading'
+import { useParams } from 'react-router-dom'
 
-export default class Article extends Component {
-    static propTypes = {
-        teamId: PropTypes.string.isRequired,
-        articleId: PropTypes.string.isRequired,
-        children: PropTypes.func.isRequired,
-    }
-    state = {
-        article: null,
-    }
-    componentDidMount () {
-        const { teamId, articleId } = this.props
-        this.getArticle(teamId, articleId)
-    }
-    componentWillReceiveProps (nextProps) {
-        if (this.props.articleId !== nextProps.articleId) {
-        this.getArticle(nextProps.teamId, nextProps.articleId)
-        }
-    }
-    getArticle = (teamId, articleId) => {
-        this.setState(() => ({
-        article: null
-        }))
+export default function Article(){
+    const [ article, setArticle ] = useState(null)
+    const { articleId, teamId }  = useParams()
+
+    useEffect(() => {
+        setArticle(null)
 
         getArticle(teamId, articleId)
-        .then((article) => this.setState(() => ({ article })))
-    }
-    render () {
-        return this.props.children(this.state.article)
-    }
+        .then((article) => setArticle(article))
+    }, [articleId, teamId])
+
+    if (!article) return <Loading />
+
+    return ( 
+        <div className='panel'>
+            <div className='panel'>
+                <article className='article'>
+                    <h1 className='header'>{article.title}</h1>
+                    <p>{article.body}</p>
+                </article>
+                </div>
+        </div>
+        )
 }
