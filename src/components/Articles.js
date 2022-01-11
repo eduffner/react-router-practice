@@ -1,21 +1,19 @@
 import React, { useEffect, useReducer } from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { getTeamsArticles } from '../api'
 import Article from './Article'
 import Loading from './Loading'
 import { useParams } from 'react-router-dom'
-import { useRouteMatch } from 'react-router-dom/cjs/react-router-dom.min'
 
 const articlesReducer = (state, action) => {
-    switch(action.type) {
+    switch (action.type) {
         case 'fetch': {
             return {
                 loading: false,
                 teamsArticles: action.articles
             }
-        } default: throw new Error("This action is not allowed")
-    }
+        } default:    }
 }
 
 export default function Articles() {
@@ -24,7 +22,6 @@ export default function Articles() {
         teamsArticles: []
     })
     const { teamId } = useParams()
-    const { path } = useRouteMatch()
 
     useEffect(() => {
         getTeamsArticles(teamId) 
@@ -46,14 +43,10 @@ export default function Articles() {
                 title='Articles'
                 list={teamsArticles.map((article) => article.title)}
             />
-            <Switch>
-                <Route path={`${path}/:articleId`} >
-                    <Article />
-                </Route>
-                <Route path="*">
-                    <div className='sidebar-instruction'>Please select an article</div>
-                </Route> 
-            </Switch>
+            <Routes>
+                <Route path=":articleId" element={<Article />} />
+                <Route path="/" element={<div className='sidebar-instruction'>Please select an article</div>} />
+            </Routes>
         </div>
     )
 

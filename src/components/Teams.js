@@ -1,6 +1,5 @@
 import React, { useEffect, useReducer } from 'react'
-import { Route, Switch } from 'react-router-dom'
-import { useRouteMatch } from 'react-router-dom/cjs/react-router-dom.min'
+import { Route, Routes } from 'react-router-dom'
 import { getTeamNames } from '../api'
 import Sidebar from './Sidebar'
 import Team from './Team'
@@ -28,19 +27,14 @@ export default function Teams() {
     }, [])
 
     const { teams, loading } = state;
-    const { url } = useRouteMatch();
 
     return (
         <div className='container two-column'>
             <Sidebar title="Teams" list={teams} loading={loading} />
-            <Switch>
-                <Route path={`${url}/:teamId`} >
-                    <Team />
-                </Route>
-                <Route path="*">
-                    <div className='sidebar-instruction'>Please select a team</div>
-                </Route>
-            </Switch>
+            <Routes>
+                <Route path={":teamId"} element={<Team />} />
+                <Route path="/" element={<div className='sidebar-instruction'>Please select a team</div>} />
+            </Routes>
         </div> 
     )
     

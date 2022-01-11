@@ -1,5 +1,5 @@
 import React from 'react'
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Loading from './Loading'
 import NavBar from './NavBar'
 
@@ -16,26 +16,14 @@ export default function App() {
       <div>
         <NavBar/>
         <React.Suspense fallback={<Loading />}>
-          <Switch>
-              <Route  path="/" exact >
-                <Home />
-              </Route>
-              <Route path="/players">
-                <Players />
-              </Route> 
-              <Route path="/teams">
-                <Teams />
-              </Route>
-              <Route path="/:teamId" exact>
-                <TeamPage />
-              </Route>
-              <Route path="/:teamId/articles">
-                <Articles />
-              </Route>
-              <Route path="*">
-                <h1 className="text-center">404</h1>
-              </Route>
-          </Switch>
+          <Routes>
+              <Route path="/" exact element={<Home />} />
+              <Route path="/players/*" element={<Players />} />
+              <Route path="/teams/*" element={<Teams />} />
+              <Route path="/:teamId" exact element={<TeamPage />} />
+              <Route path="/:teamId/articles/*" element={<Articles />} />
+              <Route path="*" element={<h1 className="text-center">404</h1>} />
+          </Routes>
         </React.Suspense>
       </div>
     </Router>

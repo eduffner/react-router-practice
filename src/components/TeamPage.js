@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { getTeamNames, getTeamsArticles, getTeam } from '../api'
 import slug from 'slug'
 import TeamLogo from './TeamLogo'
-import { Link, Redirect } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import Loading from './Loading'
-import { useParams, useRouteMatch } from 'react-router-dom/cjs/react-router-dom.min'
+import { useParams, useLocation } from 'react-router-dom'
 
 export default function TeamPage() {
     const initialState = {
@@ -26,12 +26,12 @@ export default function TeamPage() {
     }, [teamId])
 
     const { loading, articles, teamNames, team } = state
-    const { url } = useRouteMatch();
+    const { pathname } = useLocation();
 
     if (loading) return <Loading/> 
 
     if (!teamNames.includes(teamId)) {
-        return <Redirect to="/" />
+        return <Navigate to="/" />
     }
 
     return (
@@ -59,7 +59,7 @@ export default function TeamPage() {
             <ul className='articles'>
             {articles.map((article) => (
                 <li key={article.id}>
-                <Link to={`${url}/articles/${slug(article.title)}`}>
+                <Link to={`${pathname}/articles/${slug(article.title)}`}>
                     <h4 className='article-title'>{article.title}</h4>
                     <div className='article-date'>{article.date.toLocaleDateString()}</div>
                 </Link>
