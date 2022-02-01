@@ -9,3 +9,10 @@ The main idea of this app is you have a league of teams and you can view informa
 
 ## Notes
 Each commit is a rewrite of the app. First it's coded with React Router 4, then RR5, then RR6. I did this as a practice to help myself remember the distinguishing features of each library.
+
+## Run
+To run the app, it's pretty self explanatory:
+- Clone the repo
+- run `npm install`
+- run `npm start`
+- visit http://localhost:3000 in your browser
